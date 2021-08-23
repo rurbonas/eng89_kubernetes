@@ -66,6 +66,18 @@ To store data permanently, Kubernetes uses Persistent Volumes. While the CPU and
 
 ![](volumes.png)
 
+# Secrets (?)
+
+Containerized applications running in Kubernetes almost always need access to external resources that usually require secrets, passwords, keys, or tokens to gain access. Kubernetes Secrets lets you securely store these items, removing the need to store them in Pod definitions or container images.
+
+For username and password secrets, use this command line pattern:
+`kubectl create secret generic <secret-object-name> <flags>`
+
+For secrets using TLS from a given public/private key pair, use this command line pattern:
+`kubectl create secret tls <secret-object-name> --cert=<cert-path> --key=<key-file-path>`
+
+
+
 # What is a POD?
 
 Kubernetes doesn’t run containers directly instead it wraps one or more containers into a higher-level structure called a pod.
@@ -76,6 +88,19 @@ Any containers in the same pod will share the same resources and local network. 
 Pods are used as the unit of replication in Kubernetes. If your application becomes too popular and a single pod instance can’t carry the load, Kubernetes can be configured to deploy new replicas of your pod to the cluster as necessary. Even when not under heavy load, it is standard to have multiple copies of a pod running at any time in a production system to allow load balancing and failure resistance.
 
 Pods can hold multiple containers, but you should limit yourself when possible. Because pods are scaled up and down as a unit, all containers in a pod must scale together, regardless of their individual needs. This leads to wasted resources and an expensive bill. To resolve this, pods should remain as small as possible, typically holding only a main process and its tightly-coupled helper containers (these helper containers are typically referred to as “side-cars”).
+
+# Deployments
+
+Although pods are the basic unit of computation in Kubernetes, they are not typically directly launched on a cluster. Instead, pods are usually managed by one more layer of abstraction: the deployment.
+
+![](deployment_diagram.JPG)
+
+A deployment’s primary purpose is to declare how many replicas of a pod should be running at a time. When a deployment is added to the cluster, it will automatically spin up the requested number of pods, and then monitor them. If a pod dies, the deployment will automatically re-create it.
+
+Using a deployment, you don’t have to deal with pods manually. You can just declare the desired state of the system, and it will be managed for you automatically.
+
+![](how-you-deploy-a-container-on-kubernetes.jpg)
+
 
 # Creating pods
 
