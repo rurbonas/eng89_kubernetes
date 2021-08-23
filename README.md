@@ -76,7 +76,15 @@ For username and password secrets, use this command line pattern:
 For secrets using TLS from a given public/private key pair, use this command line pattern:
 `kubectl create secret tls <secret-object-name> --cert=<cert-path> --key=<key-file-path>`
 
+# Load Balancer
 
+![](balancer.jpg)
+
+The load balancer tracks the availability of pods with the Kubernetes Endpoints API. When it receives a request for a specific Kubernetes service, the Kubernetes load balancer sorts in order or round robins the request among relevant Kubernetes pods for the service.
+
+"You open a pizza shop and hire your nephew to take phone orders. For the first few weeks, you only get two or three calls per evening, so you get by with just one phone line and only your nephew assisting you. Then, someone posts a fantastic review of your place on reddit and the business explodes. Now you've got dozens of calls per night, your nephew can't keep up, and customers aren't getting through because your one measly phone line is always busy. So, you hire your nephew's school friends to be his fellow phone operators, and you call the phone company to set up additional lines. They set it up so that when a customer dials your number, it will ring to whichever one of your phones isn't busy at the moment. Now, you can accept multiple calls at the same time."
+
+Replace phone lines with web servers and we get the idea. Basically, routing incoming requests to whichever server is the least busy, even though to your customers it all looks like one phone number / web address.
 
 # What is a POD?
 
