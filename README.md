@@ -91,9 +91,9 @@ Pods can hold multiple containers, but you should limit yourself when possible. 
 
 # Deployments
 
-Although pods are the basic unit of computation in Kubernetes, they are not typically directly launched on a cluster. Instead, pods are usually managed by one more layer of abstraction: the deployment.
-
 ![](deployment_diagram.JPG)
+
+Although pods are the basic unit of computation in Kubernetes, they are not typically directly launched on a cluster. Instead, pods are usually managed by one more layer of abstraction: the deployment.
 
 A deployment’s primary purpose is to declare how many replicas of a pod should be running at a time. When a deployment is added to the cluster, it will automatically spin up the requested number of pods, and then monitor them. If a pod dies, the deployment will automatically re-create it.
 
@@ -105,6 +105,7 @@ Using a deployment, you don’t have to deal with pods manually. You can just de
 # Creating pods
 
 Create a YAML file:
+
 nginx_k8_deploy.yml
 ```YAML
 # K8s works with API versions to declare the resources
@@ -169,6 +170,72 @@ status:
     ingress:
       - hostname: localhost  
 ```
+
+mongo-deploy.yml
+```YAML
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:3.6.17-xenial
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: storage
+              mountPath: /data/db
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+```
+
+mongo-service.yml
+```YAML
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-deployment
+  labels:
+    app: database
+spec:
+  clusterIP: None
+  selector:
+    app: database
+```
+
 - `kubectl create -f nginx_k8_deploy.yml`
 - `kubectl get deployment`
 - `kubectl get pods`
