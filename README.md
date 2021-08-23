@@ -27,3 +27,16 @@ Kubernetes provides you with:
 - Self-healing - Kubernetes restarts containers that fail, replaces containers, kills containers that don't respond to your user-defined health check, and doesn't advertise them to clients until they are ready to serve.
 
 - Secret and configuration management - Kubernetes lets you store and manage sensitive information, such as passwords, OAuth tokens, and SSH keys. You can deploy and update secrets and application configuration without rebuilding your container images, and without exposing secrets in your stack configuration.
+
+# Advantages:
+- Using Kubernetes and its huge ecosystem can improve your productivity
+- Kubernetes and a cloud-native tech stack attracts talent
+- Kubernetes is a future proof solution
+- Kubernetes helps to make your application run more stable
+
+# Drawbacks:
+- Kubernetes can be an overkill for simple applications
+- Kubernetes is very complex and can reduce productivity
+- The transition to Kubernetes can be cumbersome
+
+![](graph.png)
