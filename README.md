@@ -1,12 +1,12 @@
 # Kubernetes
 
-![](docker-turtles.jpg)
+![](imgs/docker-turtles.jpg)
 
 Kubernetes is an open-source container-orchestration system for automating computer application deployment, scaling, and management. It was originally designed by Google and is now maintained by the Cloud Native Computing Foundation. 
 
 It is also known as K8s, it is a silly but harmless convention for shortening the word “Kubernetes”. The 8 represents the 8 letters in between the “K” at the beginning and the “s” at the end, i.e. K-ubernete-s, “ubernete” is 8 letters.
 
-![](k8s.JPG)
+![](imgs/k8s.JPG)
 
 # Why should we use it?
 
@@ -39,7 +39,7 @@ Kubernetes provides you with:
 - Kubernetes is very complex and can reduce productivity
 - The transition to Kubernetes can be cumbersome
 
-![](graph.png)
+![](imgs/graph.png)
 
 
 # What is a Node?
@@ -48,7 +48,7 @@ A node is the smallest unit of computing hardware in Kubernetes. It is a represe
 
 Thinking of a machine as a “node” allows us to insert a layer of abstraction. Now, instead of worrying about the unique characteristics of any individual machine, we can instead simply view each machine as a set of CPU and RAM resources that can be utilized. In this way, any machine can substitute any other machine in a Kubernetes cluster.
 
-![](node.png)
+![](imgs/node.png)
 
 # Cluster
 
@@ -56,7 +56,7 @@ Although working with individual nodes can be useful, it’s not the Kubernetes 
 
 In Kubernetes, nodes pool together their resources to form a more powerful machine. When you deploy programs onto the cluster, it intelligently handles distributing work to the individual nodes for you. If any nodes are added or removed, the cluster will shift around work as necessary. It shouldn’t matter to the program, or the programmer, which individual machines are actually running the code.
 
-![](cluster.png)
+![](imgs/cluster.png)
 
 # Volumes
 
@@ -64,7 +64,7 @@ Because programs running on your cluster aren’t guaranteed to run on a specifi
 
 To store data permanently, Kubernetes uses Persistent Volumes. While the CPU and RAM resources of all nodes are effectively pooled and managed by the cluster, persistent file storage is not. Instead, local or cloud drives can be attached to the cluster as a Persistent Volume. This can be thought of as plugging an external hard drive in to the cluster. Persistent Volumes provide a file system that can be mounted to the cluster, without being associated with any particular node.
 
-![](volumes.png)
+![](imgs/volumes.png)
 
 # Secrets (?)
 
@@ -78,7 +78,7 @@ For secrets using TLS from a given public/private key pair, use this command lin
 
 # Load Balancer
 
-![](balancer.jpg)
+![](imgs/balancer.jpg)
 
 The load balancer tracks the availability of pods with the Kubernetes Endpoints API. When it receives a request for a specific Kubernetes service, the Kubernetes load balancer sorts in order or round robins the request among relevant Kubernetes pods for the service.
 
@@ -91,7 +91,7 @@ Replace phone lines with web servers and we get the idea. Basically, routing inc
 Kubernetes doesn’t run containers directly instead it wraps one or more containers into a higher-level structure called a pod.
 Any containers in the same pod will share the same resources and local network. Containers can easily communicate with other containers in the same pod as though they were on the same machine while maintaining a degree of isolation from others.
 
-![](pods.jpg)
+![](imgs/pods.jpg)
 
 Pods are used as the unit of replication in Kubernetes. If your application becomes too popular and a single pod instance can’t carry the load, Kubernetes can be configured to deploy new replicas of your pod to the cluster as necessary. Even when not under heavy load, it is standard to have multiple copies of a pod running at any time in a production system to allow load balancing and failure resistance.
 
@@ -99,7 +99,7 @@ Pods can hold multiple containers, but you should limit yourself when possible. 
 
 # Deployments
 
-![](deployment_diagram.JPG)
+![](imgs/deployment_diagram.JPG)
 
 Although pods are the basic unit of computation in Kubernetes, they are not typically directly launched on a cluster. Instead, pods are usually managed by one more layer of abstraction: the deployment.
 
@@ -107,8 +107,29 @@ A deployment’s primary purpose is to declare how many replicas of a pod should
 
 Using a deployment, you don’t have to deal with pods manually. You can just declare the desired state of the system, and it will be managed for you automatically.
 
-![](how-you-deploy-a-container-on-kubernetes.jpg)
+![](imgs/how-you-deploy-a-container-on-kubernetes.jpg)
 
+
+# Jobs and CronJobs
+
+Just like in a typical operating system, the ability to perform automated, scheduled jobs without user interaction is important in the Kubernetes world.
+
+Kubernetes Jobs are used to create transient pods that perform specific tasks they are assigned to. CronJobs do the same thing, but they run tasks based on a defined schedule.
+
+Jobs play an important role in Kubernetes, especially for running batch processes or important ad-hoc operations. Jobs differ from other Kubernetes controllers in that they run tasks until completion, rather than managing the desired state such as in Deployments, ReplicaSets, and StatefulSets.
+
+![](imgs/Cron.webp)
+
+### Kubernetes + Compose = Kompose
+
+Kompose is a conversion tool for Docker Compose to container orchestrators such as Kubernetes (or OpenShift).
+It takes a Docker Compose file and translates it into Kubernetes resources.
+
+Transformation of the Docker Compose format to Kubernetes resources manifest may not be exact, but it helps tremendously when first deploying an application on Kubernetes.
+
+```
+choco install kubernetes-kompose
+```
 
 # Creating pods
 
@@ -314,3 +335,35 @@ spec:
 - `kubectl delete deploy nginx-deployment`
 - `kubectl delete svc nginx-deployment`
 - `kubectl get hpa`
+
+cron-job.yml
+```YAML
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: eng89
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: eng89
+            image: busybox
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - date; echo thank you for using cronjob
+
+          restartPolicy: OnFailure
+```
+
+Create yml job file
+- `kubectl apply -f cron-job.yml`
+- `kubectl get cronjob`
+- `kubectl get job --watch`
+copy name and paste on next command
+- `pods=$(kubectl get pods --selector=job-name=eng89-27163575 --output=jsonpath={.items[*].metadata.name})`
+- `kubectl logs $pods`
