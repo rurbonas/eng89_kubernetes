@@ -115,6 +115,7 @@ Using a deployment, you don’t have to deal with pods manually. You can just de
 Create a YAML file:
 
 - For testing nginx
+
 nginx_k8_deploy.yml
 ```YAML
 # K8s works with API versions to declare the resources
@@ -181,6 +182,7 @@ status:
 ```
 
 - To run the sparta app
+
 mongo-deploy.yml
 ```YAML
 apiVersion: apps/v1
@@ -282,6 +284,7 @@ spec:
 ```
 
 - For autoscaling
+
 node-hpa.yml
 ```YAML
 apiVersion: autoscaling/v1
