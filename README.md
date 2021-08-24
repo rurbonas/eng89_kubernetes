@@ -114,6 +114,7 @@ Using a deployment, you don’t have to deal with pods manually. You can just de
 
 Create a YAML file:
 
+- For testing nginx
 nginx_k8_deploy.yml
 ```YAML
 # K8s works with API versions to declare the resources
@@ -179,12 +180,43 @@ status:
       - hostname: localhost  
 ```
 
+- To run the sparta app
 mongo-deploy.yml
+```YAML
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: storage
+              mountPath: /data/db
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: mongo-db
+```
+
+mongo-service.yml
 ```YAML
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mongo-pvc
+  name: mongo-db
 spec:
   accessModes:
     - ReadWriteOnce
@@ -202,46 +234,73 @@ spec:
   ports:
     - port: 27017
       targetPort: 27017
----
+```
+node-deploy.yml
+```YAML
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongo
+  name: node
 spec:
   selector:
     matchLabels:
-      app: mongo
-  template:
+      app: node
+  replicas: 3
+  template: 
     metadata:
       labels:
-        app: mongo
+        app: node
     spec:
       containers:
-        - name: mongo
-          image: mongo:3.6.17-xenial
+        - name: node
+          image: rurbon/eng89_docker_app_slim
           ports:
-            - containerPort: 27017
-          volumeMounts:
-            - name: storage
-              mountPath: /data/db
-      volumes:
-        - name: storage
-          persistentVolumeClaim:
-            claimName: mongo-pvc
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: mongodb://mongo:27017/posts
+          # command: ["/bin/sh","-c"]
+          # args: ["node","seeds/seed.js"]
+          imagePullPolicy: Always
+ 
 ```
 
-mongo-service.yml
+node-service.yml
 ```YAML
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongo-deployment
-  labels:
-    app: database
+  name: node
 spec:
-  clusterIP: None
   selector:
-    app: database
+    app: node
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: LoadBalancer    
+
+```
+
+- For autoscaling
+node-hpa.yml
+```YAML
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+
+metadata:
+  name: node
+  namespace: default
+
+spec:
+  maxReplicas: 9
+  minReplicas: 2
+  # target your node-app-deployment so the 
+  # hpa knows which deployment to scale up on demand, scale down when no longer
+  scaleTargetRef:
+    apiVersion: app/v1
+    kind: Deployment
+    name: node
+  targetCPUUtilizationPercentage: 50
 ```
 
 - `kubectl create -f nginx_k8_deploy.yml`
@@ -251,3 +310,4 @@ spec:
 - `kubectl edit svc nginx-deployment`
 - `kubectl delete deploy nginx-deployment`
 - `kubectl delete svc nginx-deployment`
+- `kubectl get hpa`
